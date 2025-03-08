@@ -1,3 +1,7 @@
+import sys
+import tkinter as tk
+from tkinter import messagebox
+
 def suma(a, b):
     while b:
         carry = a & b
@@ -35,67 +39,50 @@ def division(a, b):
         cociente = suma(cociente, multiplicador)
     return cociente
 
-def factorial(n):
-    if n == 0 or n == 1:
-        return 1
-    resultado = 1
-    while n > 1:
-        resultado = multiplicacion(resultado, n)
-        n = resta(n, 1)
-    return resultado
+def calcular(operacion):
+    try:
+        num1 = int(entry_num1.get())
+        num2 = int(entry_num2.get())
+        if operacion == "suma":
+            resultado = suma(num1, num2)
+        elif operacion == "resta":
+            resultado = resta(num1, num2)
+        elif operacion == "multiplicacion":
+            resultado = multiplicacion(num1, num2)
+        elif operacion == "division":
+            resultado = division(num1, num2)
+        label_resultado.config(text=f"Resultado: {resultado}")
+    except ValueError:
+        messagebox.showerror("Error", "Ingrese números válidos")
 
-def potencia(base, exponente):
-    resultado = 1
-    while exponente > 0:
-        resultado = multiplicacion(resultado, base)
-        exponente = resta(exponente, 1)
-    return resultado
+# Crear ventana principal
+root = tk.Tk()
+root.title("Calculadora Sin Operadores")
+root.geometry("400x300")
 
-def raiz_cuadrada(n):
-    if n < 0:
-        return "Error: Número negativo"
-    x = n
-    y = 1
-    while x > y:
-        x = division(suma(x, y), 2)
-        y = division(n, x)
-    return x
+frame_entrada = tk.Frame(root)
+frame_entrada.pack(side=tk.LEFT, padx=20, pady=20)
 
-# Diccionario de operaciones para permitir expansión fácil
-operaciones = {
-    "1": ("Suma", suma, True),
-    "2": ("Resta", resta, True),
-    "3": ("Multiplicación", multiplicacion, True),
-    "4": ("División", division, True),
-    "5": ("Factorial", factorial, False),
-    "6": ("Potencia", potencia, True),
-    "7": ("Raíz Cuadrada", raiz_cuadrada, False),
-    "8": ("Salir", None, False),
-}
+tk.Label(frame_entrada, text="Ingrese el primer número:").pack()
+entry_num1 = tk.Entry(frame_entrada)
+entry_num1.pack()
 
-def main():
-    while True:
-        print("\nSeleccione la operación a realizar:")
-        for key, (nombre, _, requiere_segundo) in operaciones.items():
-            print(f"{key}. {nombre}")
+tk.Label(frame_entrada, text="Ingrese el segundo número:").pack()
+entry_num2 = tk.Entry(frame_entrada)
+entry_num2.pack()
 
-        opcion = input("Ingrese una opción: ")
-        if opcion == "8":
-            print("Saliendo...")
-            break
+tk.Button(frame_entrada, text="Suma", command=lambda: calcular("suma")).pack()
+tk.Button(frame_entrada, text="Resta", command=lambda: calcular("resta")).pack()
+tk.Button(frame_entrada, text="Multiplicación", command=lambda: calcular("multiplicacion")).pack()
+tk.Button(frame_entrada, text="División", command=lambda: calcular("division")).pack()
 
-        if opcion not in operaciones:
-            print("Opción no válida, intente de nuevo.")
-            continue
+frame_resultado = tk.Frame(root)
+frame_resultado.pack(side=tk.RIGHT, padx=20, pady=20)
 
-        num1 = int(input("Ingrese el primer número: "))
-        if operaciones[opcion][2]:  # Si la operación requiere segundo número
-            num2 = int(input("Ingrese el segundo número: "))
-            resultado = operaciones[opcion][1](num1, num2)
-        else:
-            resultado = operaciones[opcion][1](num1)
+label_resultado = tk.Label(frame_resultado, text="Resultado: ", font=("Arial", 14))
+label_resultado.pack()
 
-        print(f"El resultado es: {resultado}")
+tk.Button(frame_resultado, text="Salir", command=root.quit).pack()
 
-if __name__ == "__main__":
-    main()
+root.mainloop()
+
