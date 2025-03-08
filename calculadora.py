@@ -1,24 +1,24 @@
 def suma(a, b):
     while b:
-        carry = a & b  # Encuentra los bits que deben llevarse
-        a = a ^ b  # Suma sin llevar
-        b = carry << 1  # Se suma el carry
+        carry = a & b
+        a = a ^ b
+        b = carry << 1
     return a
 
 def resta(a, b):
     while b:
-        borrow = (~a) & b  # Encuentra los bits que se deben tomar prestados
-        a = a ^ b  # Resta sin borrow
+        borrow = (~a) & b
+        a = a ^ b
         b = borrow << 1
     return a
 
 def multiplicacion(a, b):
     resultado = 0
     while b:
-        if b & 1:  # Si el bit menos significativo de b es 1
+        if b & 1:
             resultado = suma(resultado, a)
-        a <<= 1  # Multiplica por 2
-        b >>= 1  # Divide entre 2
+        a <<= 1
+        b >>= 1
     return resultado
 
 def division(a, b):
@@ -35,33 +35,67 @@ def division(a, b):
         cociente = suma(cociente, multiplicador)
     return cociente
 
+def factorial(n):
+    if n == 0 or n == 1:
+        return 1
+    resultado = 1
+    while n > 1:
+        resultado = multiplicacion(resultado, n)
+        n = resta(n, 1)
+    return resultado
+
+def potencia(base, exponente):
+    resultado = 1
+    while exponente > 0:
+        resultado = multiplicacion(resultado, base)
+        exponente = resta(exponente, 1)
+    return resultado
+
+def raiz_cuadrada(n):
+    if n < 0:
+        return "Error: Número negativo"
+    x = n
+    y = 1
+    while x > y:
+        x = division(suma(x, y), 2)
+        y = division(n, x)
+    return x
+
+# Diccionario de operaciones para permitir expansión fácil
+operaciones = {
+    "1": ("Suma", suma, True),
+    "2": ("Resta", resta, True),
+    "3": ("Multiplicación", multiplicacion, True),
+    "4": ("División", division, True),
+    "5": ("Factorial", factorial, False),
+    "6": ("Potencia", potencia, True),
+    "7": ("Raíz Cuadrada", raiz_cuadrada, False),
+    "8": ("Salir", None, False),
+}
+
 def main():
     while True:
         print("\nSeleccione la operación a realizar:")
-        print("1. Suma")
-        print("2. Resta")
-        print("3. Multiplicación")
-        print("4. División")
-        print("5. Salir")
-        opcion = input("Ingrese una opción: ")
+        for key, (nombre, _, requiere_segundo) in operaciones.items():
+            print(f"{key}. {nombre}")
 
-        if opcion == '5':
+        opcion = input("Ingrese una opción: ")
+        if opcion == "8":
             print("Saliendo...")
             break
-        
-        num1 = int(input("Ingrese el primer número: "))
-        num2 = int(input("Ingrese el segundo número: "))
-        
-        if opcion == '1':
-            print("El resultado es:", suma(num1, num2))
-        elif opcion == '2':
-            print("El resultado es:", resta(num1, num2))
-        elif opcion == '3':
-            print("El resultado es:", multiplicacion(num1, num2))
-        elif opcion == '4':
-            print("El resultado es:", division(num1, num2))
-        else:
+
+        if opcion not in operaciones:
             print("Opción no válida, intente de nuevo.")
+            continue
+
+        num1 = int(input("Ingrese el primer número: "))
+        if operaciones[opcion][2]:  # Si la operación requiere segundo número
+            num2 = int(input("Ingrese el segundo número: "))
+            resultado = operaciones[opcion][1](num1, num2)
+        else:
+            resultado = operaciones[opcion][1](num1)
+
+        print(f"El resultado es: {resultado}")
 
 if __name__ == "__main__":
     main()
