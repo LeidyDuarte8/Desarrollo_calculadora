@@ -1,5 +1,5 @@
 import unittest
-from calculadora import suma, resta, multiplicacion, division
+from calculadora import suma, resta, multiplicacion, division, factorial, potencia, raiz_cuadrada
 
 class TestCalculadora(unittest.TestCase):
     def test_suma(self):
@@ -21,4 +21,23 @@ class TestCalculadora(unittest.TestCase):
         self.assertEqual(division(10, 2), 5)
         self.assertEqual(division(9, 3), 3)
         self.assertEqual(division(7, 2), 3)  # División entera
-        
+        self.assertEqual(division(5, 0), "Error: División por cero")
+
+    def test_factorial(self):
+        self.assertEqual(factorial(5), 120)
+        self.assertEqual(factorial(0), 1)
+        self.assertEqual(factorial(1), 1)
+
+    def test_potencia(self):
+        self.assertEqual(potencia(2, 3), 8)
+        self.assertEqual(potencia(5, 0), 1)
+        self.assertEqual(potencia(3, 2), 9)
+
+    def test_raiz_cuadrada(self):
+        self.assertEqual(raiz_cuadrada(4), 2)
+        self.assertEqual(raiz_cuadrada(9), 3)
+        self.assertEqual(raiz_cuadrada(16), 4)
+        self.assertEqual(raiz_cuadrada(-1), "Error: Número negativo")
+
+if __name__ == '__main__':
+    unittest.main()
