@@ -3,41 +3,49 @@ import tkinter as tk
 from tkinter import messagebox
 
 def suma(a, b):
-    while b:
-        carry = a & b
-        a = a ^ b
-        b = carry << 1
+    for _ in range(b):
+        a += 1
     return a
 
 def resta(a, b):
-    while b:
-        borrow = (~a) & b
-        a = a ^ b
-        b = borrow << 1
+    for _ in range(b):
+        a -= 1
     return a
 
 def multiplicacion(a, b):
     resultado = 0
-    while b:
-        if b & 1:
-            resultado = suma(resultado, a)
-        a <<= 1
-        b >>= 1
-    return resultado
+    negativo = False
+    
+    if b < 0:
+        b = resta(0, b)
+        negativo = not negativo
+    if a < 0:
+        a = resta(0, a)
+        negativo = not negativo
+    
+    for _ in range(b):
+        resultado = suma(resultado, a)
+    
+    return resta(0, resultado) if negativo else resultado
 
 def division(a, b):
     if b == 0:
         return "Error: División por cero"
-    cociente = 0
+    resultado = 0
+    negativo = False
+    
+    if b < 0:
+        b = resta(0, b)
+        negativo = not negativo
+    if a < 0:
+        a = resta(0, a)
+        negativo = not negativo
+    
     while a >= b:
-        temp_b = b
-        multiplicador = 1
-        while (temp_b << 1) <= a:
-            temp_b <<= 1
-            multiplicador <<= 1
-        a = resta(a, temp_b)
-        cociente = suma(cociente, multiplicador)
-    return cociente
+        a = resta(a, b)
+        resultado = suma(resultado, 1)
+    
+    return resta(0, resultado) if negativo else resultado
 
 def factorial(n):
     if n == 0 or n == 1:
@@ -65,59 +73,82 @@ def raiz_cuadrada(n):
         y = division(n, x)
     return x
 
-def calcular(operacion):
-    try:
-        num1 = int(entry_num1.get())
-        if operacion in ["factorial", "raiz_cuadrada"]:
-            resultado = factorial(num1) if operacion == "factorial" else raiz_cuadrada(num1)
-        else:
-            num2 = int(entry_num2.get())
-            if operacion == "suma":
-                resultado = suma(num1, num2)
-            elif operacion == "resta":
-                resultado = resta(num1, num2)
-            elif operacion == "multiplicacion":
-                resultado = multiplicacion(num1, num2)
-            elif operacion == "division":
-                resultado = division(num1, num2)
-            elif operacion == "potencia":
-                resultado = potencia(num1, num2)
-        label_resultado.config(text=f"Resultado: {resultado}")
-    except ValueError:
-        messagebox.showerror("Error", "Ingrese números válidos")
+operaciones = {
+    "suma": suma,
+    "resta": resta,
+    "multiplicacion": multiplicacion,
+    "division": division,
+    "potencia": potencia,
+    "factorial": factorial,
+    "raiz_cuadrada": raiz_cuadrada
+}
 
-# Crear ventana principal
-root = tk.Tk()
-root.title("Calculadora Sin Operadores")
-root.geometry("500x350")
+def calcular(operacion, num1, num2=None):
+    if operacion in operaciones:
+        return operaciones[operacion](num1, num2) if num2 is not None else operaciones[operacion](num1)
+    return "Operación no válida"
 
-frame_entrada = tk.Frame(root)
-frame_entrada.pack(side=tk.LEFT, padx=20, pady=20)
+def interfaz_grafica():
+    def ejecutar_calculo(operacion):
+        try:
+            num1 = int(entry_num1.get())
+            num2 = int(entry_num2.get()) if operacion not in ["factorial", "raiz_cuadrada"] else None
+            resultado = calcular(operacion, num1, num2)
+            label_resultado.config(text=f"Resultado: {resultado}")
+        except ValueError:
+            messagebox.showerror("Error", "Ingrese números válidos")
 
-tk.Label(frame_entrada, text="Ingrese el primer número:").pack()
-entry_num1 = tk.Entry(frame_entrada)
-entry_num1.pack()
+    root = tk.Tk()
+    root.title("Calculadora Sin Operadores")
+    root.geometry("500x350")
 
-tk.Label(frame_entrada, text="Ingrese el segundo número:").pack()
-entry_num2 = tk.Entry(frame_entrada)
-entry_num2.pack()
+    frame_entrada = tk.Frame(root)
+    frame_entrada.pack(side=tk.LEFT, padx=20, pady=20)
 
-tk.Button(frame_entrada, text="Suma", command=lambda: calcular("suma")).pack()
-tk.Button(frame_entrada, text="Resta", command=lambda: calcular("resta")).pack()
-tk.Button(frame_entrada, text="Multiplicación", command=lambda: calcular("multiplicacion")).pack()
-tk.Button(frame_entrada, text="División", command=lambda: calcular("division")).pack()
-tk.Button(frame_entrada, text="Potencia", command=lambda: calcular("potencia")).pack()
-tk.Button(frame_entrada, text="Factorial", command=lambda: calcular("factorial")).pack()
-tk.Button(frame_entrada, text="Raíz Cuadrada", command=lambda: calcular("raiz_cuadrada")).pack()
+    tk.Label(frame_entrada, text="Ingrese el primer número:").pack()
+    entry_num1 = tk.Entry(frame_entrada)
+    entry_num1.pack()
 
-frame_resultado = tk.Frame(root)
-frame_resultado.pack(side=tk.RIGHT, padx=20, pady=20)
+    tk.Label(frame_entrada, text="Ingrese el segundo número (si aplica):").pack()
+    entry_num2 = tk.Entry(frame_entrada)
+    entry_num2.pack()
 
-label_resultado = tk.Label(frame_resultado, text="Resultado: ", font=("Arial", 14))
-label_resultado.pack()
+    for op in operaciones.keys():
+        tk.Button(frame_entrada, text=op.capitalize(), command=lambda o=op: ejecutar_calculo(o)).pack()
 
-tk.Button(frame_resultado, text="Salir", command=root.quit).pack()
+    frame_resultado = tk.Frame(root)
+    frame_resultado.pack(side=tk.RIGHT, padx=20, pady=20)
 
-root.mainloop()
+    label_resultado = tk.Label(frame_resultado, text="Resultado: ", font=("Arial", 14))
+    label_resultado.pack()
 
+    tk.Button(frame_resultado, text="Salir", command=root.quit).pack()
+    root.mainloop()
 
+def modo_consola():
+    while True:
+        sys.stdout.write("Seleccione operación (suma, resta, multiplicacion, division, potencia, factorial, raiz_cuadrada) o 'salir' para terminar:\n")
+        sys.stdout.flush()
+        operacion = sys.stdin.readline().strip()
+        if operacion == "salir":
+            break
+        
+        sys.stdout.write("Ingrese el primer número:\n")
+        sys.stdout.flush()
+        num1 = int(sys.stdin.readline().strip())
+
+        num2 = None
+        if operacion not in ["factorial", "raiz_cuadrada"]:
+            sys.stdout.write("Ingrese el segundo número:\n")
+            sys.stdout.flush()
+            num2 = int(sys.stdin.readline().strip())
+
+        resultado = calcular(operacion, num1, num2)
+        sys.stdout.write(f"El resultado es: {resultado}\n")
+        sys.stdout.flush()
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--cli":
+        modo_consola()
+    else:
+        interfaz_grafica()
